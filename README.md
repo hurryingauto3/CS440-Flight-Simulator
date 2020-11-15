@@ -1,9 +1,10 @@
 
 # Project I: Flight Simulator
 # CS 440 Computer Graphics, Fall 2020
-## Readme and Problem Set Created by Dr. Waqar Saleem
-### The Project was made by me and 3 other group partners
 ***
+### Note
+- Readme and Problem Set Created by Dr. Waqar Saleem
+- Project done by 3 other group members and me
 
 # Purpose
 
