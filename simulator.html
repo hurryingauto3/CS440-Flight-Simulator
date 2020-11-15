@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script id="vertex-shader" type="x-shader/x-vertex">
+    attribute vec3 vPosition;
+    attribute vec3 vNormal;
+    varying vec4 fragColor;
+
+    attribute vec3 vPosition2;
+    attribute vec3 vNormal2;
+
+    varying vec3 normal;
+    varying vec3 position;
+
+    uniform float toggleShading;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform vec3 cameraPosition;
+
+    uniform float Ka;
+    uniform float Kd;
+    uniform float Ks;
+    uniform float shininessVal;
+
+    uniform vec3 ambientColor;
+    uniform vec3 diffuseColor;
+    uniform vec3 specularColor;
+    uniform vec3 lightPos;
+
+
+    vec3 mapPoint(float p, float q, vec3 a, vec3 b, float x)
+    {
+      float coefficient = ( x - p ) / ( q - p );
+      return ( 1.0 - coefficient ) * a + coefficient * b;
+    }
+
+    vec3 getVertColor(vec3 position)
+    {
+      if(position.y <= -2.0)
+      {
+        return vec3(0.0, 0.0, 1.0);
+      }
+      else if (position.y <= 3.0)
+      {
+        vec3 brown = vec3(0.17, 0.085, 0.04);
+        vec3 green = vec3(0.1, 1.0, 0.2);
+
+        return mapPoint(-1.0, 2.0, green, brown, position.y);
+      }
+      else if (position.y <= 8.0)
+      {
+        vec3 white = vec3(1.0, 1.0, 1.0);
+        vec3 brown = vec3(0.17, 0.085, 0.04);
+
+        return mapPoint(3.0, 5.0, brown, white, position.y);
+      }
+      else
+      {
+        return vec3(1.0, 0.0, 0.0);
+      }
+    }
+
+    void main()
+    {
+            float Ka = 1.0;
+            float Kd = 1.0;
+            float Ks = 0.5;
+            float shininessVal = 4.0;
+
+            vec3 ambientColor = vec3(0.0, 0.0, 0.0);
+            vec3 diffuseColor = getVertColor(vPosition);
+            vec3 specularColor = vec3(1.0, 1.0, 1.0);
+
+            vec4 pos = vec4(vPosition.xyz, 1.0);
+            if (pos.y < 0.0){
+                pos.y = 0.0;
+            }
+            pos = modelViewMatrix * pos;
+            vec4 pos2 = pos;
+            if(pos2.z >= 0.0)
+            {
+                pos2.z = 10000000000.0;
+            }
+            else
+            {
+                pos2.xy = pos2.xy / pos2.z;
+                pos2 = projectionMatrix * pos2;
+            }
+
+
+            gl_PointSize = 2.5;
+            gl_Position = pos2;
+
+
+            if (toggleShading == 1.0)
+            {
+
+
+                fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+                vec3 N = normalize(vNormal);
+                vec3 L = normalize(lightPos - vPosition);
+                float lambertian = max(dot(N, L), 0.0);
+                float specular = 0.0;
+                if(lambertian > 0.0) {
+                  vec3 R = reflect(-L, N);
+                  vec3 V = normalize(cameraPosition - vPosition);
+                  float specAngle = max(dot(R, V), 0.0);
+                  specular = pow(specAngle, shininessVal);
+                }
+                fragColor = vec4(Ka * ambientColor +
+                             Kd * lambertian * diffuseColor +
+                             Ks * specular * specularColor, 1.0);
+            }
+            else if (toggleShading == 2.0)
+            {
+              position = vPosition;
+              normal = vNormal;
+            }
+            else if (toggleShading == 0.0)
+            {
+              fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+              vec3 N = normalize(vNormal2);
+              vec3 L = normalize(lightPos - vPosition2);
+              float lambertian = max(dot(N, L), 0.0);
+              float specular = 0.0;
+              if(lambertian > 0.0) {
+                vec3 R = reflect(-L, N);
+                vec3 V = normalize(cameraPosition - vPosition2);
+                float specAngle = max(dot(R, V), 0.0);
+                specular = pow(specAngle, shininessVal);
+              }
+              fragColor = vec4(Ka * ambientColor +
+                           Kd * lambertian * diffuseColor +
+                           Ks * specular * specularColor, 1.0);
+
+            }
+
+    }
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+    precision highp float;
+    varying vec4 fragColor;
+    uniform float toggleShading;
+
+    varying vec3 normal;
+    varying vec3 position;
+
+    uniform vec3 cameraPosition;
+
+    uniform float Ka;
+    uniform float Kd;
+    uniform float Ks;
+    uniform float shininessVal;
+
+    uniform vec3 ambientColor;
+    uniform vec3 diffuseColor;
+    uniform vec3 specularColor;
+    uniform vec3 lightPos;
+
+    vec3 mapPoint(float p, float q, vec3 a, vec3 b, float x)
+    {
+      float coefficient = ( x - p ) / ( q - p );
+      return ( 1.0 - coefficient ) * a + coefficient * b;
+    }
+
+    vec3 getVertColor(vec3 position)
+    {
+      if(position.y <= -2.0)
+      {
+        return vec3(0.0, 0.0, 1.0);
+      }
+      else if (position.y <= 3.0)
+      {
+        vec3 brown = vec3(0.17, 0.085, 0.04);
+        vec3 green = vec3(0.1, 1.0, 0.2);
+
+        return mapPoint(-1.0, 2.0, green, brown, position.y);
+      }
+      else if (position.y <= 8.0)
+      {
+        vec3 white = vec3(1.0, 1.0, 1.0);
+        vec3 brown = vec3(0.17, 0.085, 0.04);
+
+        return mapPoint(3.0, 5.0, brown, white, position.y);
+      }
+      else
+      {
+        return vec3(1.0, 0.0, 0.0);
+      }
+    }
+
+
+    void main()
+    {
+      float Ka = 1.0;
+      float Kd = 1.0;
+      float Ks = 0.5;
+      float shininessVal = 4.0;
+
+      vec3 ambientColor = vec3(0.0, 0.0, 0.0);
+      vec3 diffuseColor = getVertColor(position);
+      vec3 specularColor = vec3(1.0, 1.0, 1.0);
+
+        if (toggleShading == 1.0 || toggleShading == 0.0)
+        {
+          gl_FragColor = fragColor;
+        }
+        else if (toggleShading == 2.0)
+        {
+
+          vec3 N = normalize(normal);
+          vec3 L = normalize(lightPos - position);
+          float lambertian = max(dot(N, L), 0.0);
+          float specular = 0.0;
+          if(lambertian > 0.0) {
+            vec3 R = reflect(-L, N);
+            vec3 V = normalize(cameraPosition - position);
+            float specAngle = max(dot(R, V), 0.0);
+            specular = pow(specAngle, shininessVal);
+          }
+          gl_FragColor = vec4(Ka * ambientColor +
+                       Kd * lambertian * diffuseColor +
+                       Ks * specular * specularColor, 1.0);
+        }
+    }
+</script>
+
+    <script type="text/javascript" src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/webgl-utils.js"></script>
+    <script type="text/javascript" src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/initShaders.js"></script>
+    <script type="text/javascript" src="https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/SEVENTH_EDITION/CODE/Common/MV.js"></script>
+    <script type="text/javascript" src="variables.js"></script>
+    <script type="text/javascript" src="perlin.js"></script>
+    <script type="text/javascript" src="buffer.js"></script>
+    <script type="text/javascript" src="terrain.js"></script>
+    <script type="text/javascript" src="TerrainShading.js"></script>
+    <script type="text/javascript" src="eventhandler.js"></script>
+    <script type="text/javascript" src="run.js"></script>
+
+    <script>
+        var s = setInterval(function() {document.getElementById("speed").innerHTML = Math.round(speed*1000)/1000;}, 30);
+        var a = setInterval(function() {document.getElementById("acc").innerHTML = acc;}, 30);
+        var al = setInterval(function() {document.getElementById("alt").innerHTML = Math.round(eye[1]*1000)/1000;}, 30);
+        var al = setInterval(function() {document.getElementById("dir").innerHTML = direction;}, 30);
+        var r = setInterval(function() {document.getElementById("roll").innerHTML = rotatingSwirlAngle;}, 30);
+        var p = setInterval(function() {document.getElementById("pitch").innerHTML = -1*rotatingUpAngle;}, 30);
+        var yi = setInterval(function() {document.getElementById("yaw").innerHTML = rotatingLeftAngle;}, 30);
+        var tv = setInterval(function() {document.getElementById("tv").innerHTML = terrainView;}, 30);
+        var sh = setInterval(function() {document.getElementById("Shading").innerHTML = tshading;}, 30);
+        var ex = setInterval(function() {document.getElementById("exit").innerHTML = over;}, 30);
+    </script>
+
+</head>
+
+
+<h2 style="color: white; font-family: 'Courier New', Courier, monospace;">Flight Simulator</h2  >
+<body style="background-color:black; width: auto; height:auto;">
+    <canvas id="gl-canvas" width="800px" height="500px" tabindex="35">
+        Oops ... your browser doesn't support the HTML5 canvas element
+    </canvas>
+
+
+    <div style="color: red; font-family: 'Courier New', Courier, monospace; position: absolute; top: 65px; left: 10px; font-size:x-small;">
+
+    <p style="margin-left: 10px;">
+        <b>Speed:</b>             <a><a id="speed"></a>  </a>  <br>
+        <a>  </a><b>Altitude:</b>           <a id="alt"></a> <br>
+        <a>  </a><b>Directon:</b>           <a id="dir"></a> <br>
+        <a>  </a><b>Acceleration:</b>      <a id="acc"></a> <br><br>
+        <a>  </a><b>Roll:</b>          <a id="roll"></a> <br>
+        <a>  </a><b>Pitch:</b>             <a id="pitch"></a> <br>
+        <a>  </a><b>Yaw:</b>               <a id="yaw"></a><br> <br>
+        <a>  </a><b>Terrain View:</b>      <a id="tv"></a> <br>
+        <a>  </a><b>Shading:</b>           <a id="Shading"></a><br>
+        <a>  </a><b>Exit Status:</b>           <a id="exit"></a>
+    </p>
+
+    </div>
+    <div style="color: white; font-family: 'Courier New', Courier, monospace; position: absolute; top: 55px; left: 820px; font-size:x-small;">
+
+
+    <b><p>Instructions</p></b>
+    <p  style="margin-left: 10px;">
+        - Roll has no constraints<br>
+        - Yaw is costrained between -90 and 90<br>
+        - Pitch is constrained between -35.5 and 35.5<br>
+        - Speed is constrained between 0 and 3
+    </p>
+    <b><p style="text-indent: 10px">Veiwing Volume</p></b>
+    <p  style="margin-left: 10px;">
+        Shift+1 = Vary Left<br>
+        Shift+2 = Vary Right<br>
+        Shift+3 = Vary Top<br>
+        Shift+4 = Vary Bottom<br>
+        Shift+5 = Vary Near<br>
+        Shift+6 = Vary Far<br>
+        C = Change Shading Technique<br>
+        V = Change Terrain View
+    </p>
+    <b><p style="text-indent: 10px">Flight Controls</p></b>
+    <p  style="margin-left: 10px;">
+        W = Pitch Up <br>
+        S = Pitch Down<br>
+        A = Yaw Left<br>
+        D = Yaw Right<br>
+        Q = Roll Left<br>
+        E = Roll Right<br>
+        Up = Increase Speed<br>
+        Down = Decrease Speed
+    </p>
+    </p>
+
+    </p>
+    </div>
+
+    <<div style="color: white; font-family: 'Courier New', Courier, monospace; position: absolute; top: 380px; left: 820px; font-size:x-small;">
+    <b><p>Additonal Features</p></b>
+    <p  style="margin-left: 10px;">
+        - Perlin Noise used to smooth mountains<br>
+        - Water bodies flattened for a more realistic look<br>
+        - Added HUD
+    </p>
+    </div>
+
+</body>
+
+</html>
