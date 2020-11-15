@@ -1,6 +1,8 @@
-[![Work in Repl.it](https://classroom.github.com/assets/work-in-replit-14baed9a392b3a25080506f3b7b6d57f295ec2978f6f33ec97e36a161684cbe9.svg)](https://classroom.github.com/online_ide?assignment_repo_id=318688&assignment_repo_type=GroupAssignmentRepo)
+
 # Project I: Flight Simulator
 # CS 440 Computer Graphics, Fall 2020
+## Readme and Problem Set Created by Dr. Waqar Saleem
+### The Project was made by me and 3 other group partners
 ***
 
 # Purpose
